@@ -5,6 +5,7 @@ import (
 	"go-restaurant-app/internal/database"
 	"go-restaurant-app/internal/delivery/rest"
 	"go-restaurant-app/internal/repository/menu"
+	"go-restaurant-app/internal/repository/order"
 	"go-restaurant-app/internal/usecase/restaurant"
 )
 
@@ -17,7 +18,8 @@ func main() {
 
 	db := database.GetDB(dsn)
 	menuRepo := menu.GetRepository(db)
-	restaurantUsecase := restaurant.GetUsecase(menuRepo)
+	orderRepo := order.GetRepository(db)
+	restaurantUsecase := restaurant.GetUsecase(menuRepo, orderRepo)
 	h := rest.NewHandler(restaurantUsecase)
 	rest.LoadRoutes(e, h)
 	e.Logger.Fatal(e.Start(":8080"))

@@ -5,9 +5,9 @@ import (
 	"net/http"
 )
 
-func (h *handler) GetMenu(c echo.Context) error {
+func (h *handler) GetMenuList(c echo.Context) error {
 	menuType := c.FormValue("menu_type")
-	menuData, err := h.restaurantUsecase.GetMenu(menuType)
+	menuData, err := h.restaurantUsecase.GetMenuList(menuType)
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, map[string]interface{}{
 			"error": err.Error(),
