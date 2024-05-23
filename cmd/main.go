@@ -17,10 +17,16 @@ func main() {
 	e := echo.New()
 
 	db := database.GetDB(dsn)
+
 	menuRepo := menu.GetRepository(db)
 	orderRepo := order.GetRepository(db)
+
 	restaurantUsecase := restaurant.GetUsecase(menuRepo, orderRepo)
+
 	h := rest.NewHandler(restaurantUsecase)
+
+	rest.LoadMiddlware(e)
 	rest.LoadRoutes(e, h)
+
 	e.Logger.Fatal(e.Start(":8080"))
 }
