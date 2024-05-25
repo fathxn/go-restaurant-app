@@ -66,7 +66,16 @@ func (ur userRepo) GetUserData(username string) (model.User, error) {
 }
 
 func (ur userRepo) VerifyLogin(username, password string, userData model.User) (bool, error) {
-	panic("implement me")
+	if username != userData.Username {
+		return false, nil
+	}
+
+	verified, err := ur.comparePassword(password, userData.Hash)
+	if err != nil {
+		return false, err
+	}
+
+	return verified, nil
 }
 
 func (ur userRepo) CreateUserSession(userID string) (model.UserSession, error) {
