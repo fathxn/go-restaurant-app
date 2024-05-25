@@ -1,6 +1,7 @@
 package user
 
 import (
+	"crypto/aes"
 	"crypto/cipher"
 	"go-restaurant-app/internal/model"
 	"gorm.io/gorm"
@@ -15,14 +16,25 @@ type userRepo struct {
 	keyLen  uint32
 }
 
-func GetRepository(db *gorm.DB, time uint32, memory uint32, threads uint8, keyLen uint32) Repository {
+func GetRepository(db *gorm.DB, secret string, time uint32, memory uint32, threads uint8, keyLen uint32) (Repository, error) {
+	block, err := aes.NewCipher([]byte(secret))
+	if err != nil {
+		return nil, err
+	}
+
+	gcm, err := cipher.NewGCM(block)
+	if err != nil {
+		return nil, err
+	}
+
 	return &userRepo{
 		db:      db,
+		gcm:     gcm,
 		time:    time,
 		memory:  memory,
 		threads: threads,
 		keyLen:  keyLen,
-	}
+	}, nil
 }
 
 func (ur userRepo) RegisterUser(userData model.User) (model.User, error) {

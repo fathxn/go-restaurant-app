@@ -1,22 +1,26 @@
 package restaurant
 
 import (
+	"errors"
 	"github.com/google/uuid"
 	"go-restaurant-app/internal/model"
 	"go-restaurant-app/internal/model/constant"
 	"go-restaurant-app/internal/repository/menu"
 	"go-restaurant-app/internal/repository/order"
+	"go-restaurant-app/internal/repository/user"
 )
 
 type restaurantUsecase struct {
 	menuRepo  menu.Repository
 	orderRepo order.Repository
+	userRepo  user.Repository
 }
 
-func GetUsecase(menuRepo menu.Repository, orderRepo order.Repository) Usecase {
+func GetUsecase(menuRepo menu.Repository, orderRepo order.Repository, userRepo user.Repository) Usecase {
 	return &restaurantUsecase{
 		menuRepo:  menuRepo,
 		orderRepo: orderRepo,
+		userRepo:  userRepo,
 	}
 }
 
@@ -60,4 +64,31 @@ func (r *restaurantUsecase) GetOrderInfo(request model.GetOrderInfoRequest) (mod
 		return orderData, err
 	}
 	return orderData, nil
+}
+
+func (r *restaurantUsecase) RegisterUser(request model.RegisterRequest) (model.User, error) {
+	registeredUser, err := r.userRepo.CheckRegistered(request.Username)
+	if err != nil {
+		return model.User{}, err
+	}
+	if registeredUser {
+		return model.User{}, errors.New("username already registered")
+	}
+
+	passwordHash, err := r.userRepo.GenerateUserHash(request.Password)
+	if err != nil {
+		return model.User{}, err
+	}
+
+	userData, err := r.userRepo.RegisterUser(model.User{
+		ID:       uuid.New().String(),
+		Username: request.Username,
+		Hash:     passwordHash,
+	})
+
+	if err != nil {
+		return model.User{}, err
+	}
+
+	return userData, nil
 }
