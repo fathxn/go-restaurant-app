@@ -55,3 +55,20 @@ func (ur userRepo) CheckRegistered(username string) (bool, error) {
 	}
 	return userData.ID != "", nil
 }
+
+func (ur userRepo) GetUserData(username string) (model.User, error) {
+	var userData model.User
+	if err := ur.db.Where(model.User{Username: username}).First(&userData).Error; err != nil {
+		return model.User{}, err
+	}
+
+	return userData, nil
+}
+
+func (ur userRepo) VerifyLogin(username, password string, userData model.User) (bool, error) {
+	panic("implement me")
+}
+
+func (ur userRepo) CreateUserSession(userID string) (model.UserSession, error) {
+	panic("implement me")
+}
