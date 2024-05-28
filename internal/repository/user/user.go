@@ -3,17 +3,21 @@ package user
 import (
 	"crypto/aes"
 	"crypto/cipher"
+	"crypto/rsa"
 	"go-restaurant-app/internal/model"
 	"gorm.io/gorm"
+	"time"
 )
 
 type userRepo struct {
-	db      *gorm.DB
-	gcm     cipher.AEAD
-	time    uint32
-	memory  uint32
-	threads uint8
-	keyLen  uint32
+	db        *gorm.DB
+	gcm       cipher.AEAD
+	time      uint32
+	memory    uint32
+	threads   uint8
+	keyLen    uint32
+	accessExp time.Duration
+	signKey   rsa.PrivateKey
 }
 
 func GetRepository(db *gorm.DB, secret string, time uint32, memory uint32, threads uint8, keyLen uint32) (Repository, error) {
@@ -76,8 +80,4 @@ func (ur userRepo) VerifyLogin(username, password string, userData model.User) (
 	}
 
 	return verified, nil
-}
-
-func (ur userRepo) CreateUserSession(userID string) (model.UserSession, error) {
-	panic("implement me")
 }
