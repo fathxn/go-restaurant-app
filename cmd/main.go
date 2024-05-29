@@ -1,6 +1,8 @@
 package main
 
 import (
+	"crypto/rand"
+	"crypto/rsa"
 	"github.com/labstack/echo/v4"
 	"go-restaurant-app/internal/database"
 	"go-restaurant-app/internal/delivery/rest"
@@ -8,6 +10,7 @@ import (
 	"go-restaurant-app/internal/repository/order"
 	"go-restaurant-app/internal/repository/user"
 	"go-restaurant-app/internal/usecase/restaurant"
+	"time"
 )
 
 const (
@@ -19,10 +22,14 @@ func main() {
 
 	db := database.GetDB(dsn)
 	secret := "AES256Key-32Characters1234567890"
+	signKey, err := rsa.GenerateKey(rand.Reader, 4096)
+	if err != nil {
+		panic(err)
+	}
 
 	menuRepo := menu.GetRepository(db)
 	orderRepo := order.GetRepository(db)
-	userRepo, err := user.GetRepository(db, secret, 1, 64*1024, 4, 32)
+	userRepo, err := user.GetRepository(db, secret, 1, 64*1024, 4, 32, 60*time.Second, signKey)
 	if err != nil {
 		panic(err)
 	}

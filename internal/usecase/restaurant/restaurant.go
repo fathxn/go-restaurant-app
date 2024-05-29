@@ -92,3 +92,25 @@ func (r *restaurantUsecase) RegisterUser(request model.RegisterRequest) (model.U
 
 	return userData, nil
 }
+
+func (r *restaurantUsecase) LoginUser(request model.LoginRequest) (model.UserSession, error) {
+	userData, err := r.userRepo.GetUserData(request.Username)
+	if err != nil {
+		return model.UserSession{}, err
+	}
+
+	verified, err := r.userRepo.VerifyLogin(request.Username, request.Password, userData)
+	if err != nil {
+		return model.UserSession{}, err
+	}
+	if !verified {
+		return model.UserSession{}, errors.New("invalid username or password")
+	}
+
+	userSession, err := r.userRepo.CreateUserSession(userData.ID)
+	if err != nil {
+		return model.UserSession{}, err
+	}
+
+	return userSession, nil
+}

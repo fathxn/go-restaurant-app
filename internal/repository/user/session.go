@@ -1,6 +1,7 @@
 package user
 
 import (
+	"errors"
 	"github.com/golang-jwt/jwt"
 	"go-restaurant-app/internal/model"
 	"time"
@@ -33,4 +34,24 @@ func (ur *userRepo) generateAccessToken(userID string) (string, error) {
 	accessJwt := jwt.NewWithClaims(jwt.GetSigningMethod("RS256"), accessClaims)
 
 	return accessJwt.SignedString(ur.signKey)
+}
+
+func (ur *userRepo) CheckSession(data model.UserSession) (userID string, err error) {
+	accessToken, err := jwt.ParseWithClaims(data.JWTToken, &Claims{}, func(token *jwt.Token) (interface{}, error) {
+		return &ur.signKey.PublicKey, nil
+	})
+	if err != nil {
+		return "", err
+	}
+
+	accessTokenClaims, ok := accessToken.Claims.(*Claims)
+	if !ok {
+		return "", errors.New("unauthorized")
+	}
+
+	if accessToken.Valid {
+		return accessTokenClaims.Subject, nil
+	}
+
+	return "", errors.New("unauthorized")
 }

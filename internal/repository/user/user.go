@@ -17,10 +17,10 @@ type userRepo struct {
 	threads   uint8
 	keyLen    uint32
 	accessExp time.Duration
-	signKey   rsa.PrivateKey
+	signKey   *rsa.PrivateKey
 }
 
-func GetRepository(db *gorm.DB, secret string, time uint32, memory uint32, threads uint8, keyLen uint32) (Repository, error) {
+func GetRepository(db *gorm.DB, secret string, time uint32, memory uint32, threads uint8, keyLen uint32, accessExp time.Duration, signKey *rsa.PrivateKey) (Repository, error) {
 	block, err := aes.NewCipher([]byte(secret))
 	if err != nil {
 		return nil, err
@@ -32,12 +32,14 @@ func GetRepository(db *gorm.DB, secret string, time uint32, memory uint32, threa
 	}
 
 	return &userRepo{
-		db:      db,
-		gcm:     gcm,
-		time:    time,
-		memory:  memory,
-		threads: threads,
-		keyLen:  keyLen,
+		db:        db,
+		gcm:       gcm,
+		time:      time,
+		memory:    memory,
+		threads:   threads,
+		keyLen:    keyLen,
+		accessExp: accessExp,
+		signKey:   signKey,
 	}, nil
 }
 
