@@ -26,10 +26,12 @@ type OrderMenuProductRequest struct {
 }
 
 type OrderMenuRequest struct {
+	UserID        string                    `json:"-"`
 	OrderProducts []OrderMenuProductRequest `json:"order_products"`
 	ReferenceID   string                    `json:"reference_id"`
 }
 
 type GetOrderInfoRequest struct {
+	UserID  string `json:"-"`
 	OrderID string `json:"order_id"`
 }

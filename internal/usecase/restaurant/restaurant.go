@@ -114,3 +114,12 @@ func (r *restaurantUsecase) LoginUser(request model.LoginRequest) (model.UserSes
 
 	return userSession, nil
 }
+
+func (r *restaurantUsecase) CheckSession(data model.UserSession) (userID string, err error) {
+	userID, err = r.userRepo.CheckSession(data)
+	if err != nil {
+		return "", err
+	}
+
+	return userID, nil
+}
