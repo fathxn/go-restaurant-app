@@ -6,6 +6,7 @@ import (
 	"github.com/labstack/echo/v4"
 	"go-restaurant-app/internal/database"
 	"go-restaurant-app/internal/delivery/rest"
+	"go-restaurant-app/internal/logger"
 	"go-restaurant-app/internal/repository/menu"
 	"go-restaurant-app/internal/repository/order"
 	"go-restaurant-app/internal/repository/user"
@@ -18,6 +19,7 @@ const (
 )
 
 func main() {
+	logger.Init()
 	e := echo.New()
 
 	db := database.GetDB(dsn)

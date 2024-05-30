@@ -3,6 +3,7 @@ package rest
 import (
 	"encoding/json"
 	"github.com/labstack/echo/v4"
+	"github.com/sirupsen/logrus"
 	"go-restaurant-app/internal/model"
 	"go-restaurant-app/internal/model/constant"
 	"net/http"
@@ -40,6 +41,10 @@ func (h *handler) GetOrderInfo(c echo.Context) error {
 		OrderID: orderID,
 	})
 	if err != nil {
+		logrus.WithFields(logrus.Fields{
+			"error": err,
+		}).Error("[delivery][rest][order_handler][GetOrderInfo] unable to get order data")
+
 		return c.JSON(http.StatusInternalServerError, map[string]interface{}{
 			"error": err.Error(),
 		})
