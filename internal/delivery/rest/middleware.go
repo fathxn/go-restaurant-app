@@ -48,6 +48,10 @@ func (am *authMiddleware) CheckAuth(next echo.HandlerFunc) echo.HandlerFunc {
 		authContext := context.WithValue(c.Request().Context(), constant.AuthContextKey, userID)
 		c.SetRequest(c.Request().WithContext(authContext))
 
+		if err := next(c); err != nil {
+			return err
+		}
+
 		return nil
 	}
 }

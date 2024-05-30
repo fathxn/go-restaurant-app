@@ -47,6 +47,7 @@ func (r *restaurantUsecase) Order(request model.OrderMenuRequest) (model.Order, 
 
 	orderData := model.Order{
 		ID:            uuid.New().String(),
+		UserID:        request.UserID,
 		Status:        constant.OrderStatusProcessed,
 		ProductOrders: productOrderData,
 		ReferenceID:   request.ReferenceID,
@@ -63,6 +64,11 @@ func (r *restaurantUsecase) GetOrderInfo(request model.GetOrderInfoRequest) (mod
 	if err != nil {
 		return orderData, err
 	}
+
+	if orderData.UserID != request.UserID {
+		return model.Order{}, errors.New("unauthorized")
+	}
+
 	return orderData, nil
 }
 
