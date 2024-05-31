@@ -1,12 +1,15 @@
 package restaurant
 
-import "go-restaurant-app/internal/model"
+import (
+	"context"
+	"go-restaurant-app/internal/model"
+)
 
 type Usecase interface {
-	GetMenuList(menuType string) ([]model.MenuItem, error)
-	Order(request model.OrderMenuRequest) (model.Order, error)
-	GetOrderInfo(request model.GetOrderInfoRequest) (model.Order, error)
-	RegisterUser(request model.RegisterRequest) (model.User, error)
-	LoginUser(request model.LoginRequest) (model.UserSession, error)
-	CheckSession(data model.UserSession) (userID string, err error)
+	GetMenuList(ctx context.Context, menuType string) ([]model.MenuItem, error)
+	Order(ctx context.Context, request model.OrderMenuRequest) (model.Order, error)
+	GetOrderInfo(ctx context.Context, request model.GetOrderInfoRequest) (model.Order, error)
+	RegisterUser(ctx context.Context, request model.RegisterRequest) (model.User, error)
+	LoginUser(ctx context.Context, request model.LoginRequest) (model.UserSession, error)
+	CheckSession(ctx context.Context, data model.UserSession) (userID string, err error)
 }

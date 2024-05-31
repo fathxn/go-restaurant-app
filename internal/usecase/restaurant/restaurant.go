@@ -1,6 +1,7 @@
 package restaurant
 
 import (
+	"context"
 	"errors"
 	"github.com/google/uuid"
 	"go-restaurant-app/internal/model"
@@ -8,6 +9,7 @@ import (
 	"go-restaurant-app/internal/repository/menu"
 	"go-restaurant-app/internal/repository/order"
 	"go-restaurant-app/internal/repository/user"
+	"go-restaurant-app/internal/tracing"
 )
 
 type restaurantUsecase struct {
@@ -24,11 +26,16 @@ func GetUsecase(menuRepo menu.Repository, orderRepo order.Repository, userRepo u
 	}
 }
 
-func (r *restaurantUsecase) GetMenuList(menuType string) ([]model.MenuItem, error) {
+func (r *restaurantUsecase) GetMenuList(ctx context.Context, menuType string) ([]model.MenuItem, error) {
+	ctx, span := tracing.CreateSpan(ctx, "GetMenuList")
+	defer span.End()
 	return r.menuRepo.GetMenuList(menuType)
 }
 
-func (r *restaurantUsecase) Order(request model.OrderMenuRequest) (model.Order, error) {
+func (r *restaurantUsecase) Order(ctx context.Context, request model.OrderMenuRequest) (model.Order, error) {
+	ctx, span := tracing.CreateSpan(ctx, "Order")
+	defer span.End()
+
 	productOrderData := make([]model.ProductOrder, len(request.OrderProducts))
 	for i, orderProduct := range request.OrderProducts {
 		menuData, err := r.menuRepo.GetMenu(orderProduct.OrderCode)
@@ -53,14 +60,17 @@ func (r *restaurantUsecase) Order(request model.OrderMenuRequest) (model.Order, 
 		ReferenceID:   request.ReferenceID,
 	}
 
-	createdOrderData, err := r.orderRepo.CreateOrder(orderData)
+	createdOrderData, err := r.orderRepo.CreateOrder(ctx, orderData)
 	if err != nil {
 		return model.Order{}, err
 	}
 	return createdOrderData, nil
 }
-func (r *restaurantUsecase) GetOrderInfo(request model.GetOrderInfoRequest) (model.Order, error) {
-	orderData, err := r.orderRepo.GetOrderInfo(request.OrderID)
+func (r *restaurantUsecase) GetOrderInfo(ctx context.Context, request model.GetOrderInfoRequest) (model.Order, error) {
+	ctx, span := tracing.CreateSpan(ctx, "GetOrderInfo")
+	defer span.End()
+
+	orderData, err := r.orderRepo.GetOrderInfo(ctx, request.OrderID)
 	if err != nil {
 		return orderData, err
 	}
@@ -72,7 +82,10 @@ func (r *restaurantUsecase) GetOrderInfo(request model.GetOrderInfoRequest) (mod
 	return orderData, nil
 }
 
-func (r *restaurantUsecase) RegisterUser(request model.RegisterRequest) (model.User, error) {
+func (r *restaurantUsecase) RegisterUser(ctx context.Context, request model.RegisterRequest) (model.User, error) {
+	ctx, span := tracing.CreateSpan(ctx, "RegisterUser")
+	defer span.End()
+
 	registeredUser, err := r.userRepo.CheckRegistered(request.Username)
 	if err != nil {
 		return model.User{}, err
@@ -99,7 +112,10 @@ func (r *restaurantUsecase) RegisterUser(request model.RegisterRequest) (model.U
 	return userData, nil
 }
 
-func (r *restaurantUsecase) LoginUser(request model.LoginRequest) (model.UserSession, error) {
+func (r *restaurantUsecase) LoginUser(ctx context.Context, request model.LoginRequest) (model.UserSession, error) {
+	ctx, span := tracing.CreateSpan(ctx, "LoginUser")
+	defer span.End()
+
 	userData, err := r.userRepo.GetUserData(request.Username)
 	if err != nil {
 		return model.UserSession{}, err
@@ -121,7 +137,10 @@ func (r *restaurantUsecase) LoginUser(request model.LoginRequest) (model.UserSes
 	return userSession, nil
 }
 
-func (r *restaurantUsecase) CheckSession(data model.UserSession) (userID string, err error) {
+func (r *restaurantUsecase) CheckSession(ctx context.Context, data model.UserSession) (userID string, err error) {
+	ctx, span := tracing.CreateSpan(ctx, "CheckSession")
+	defer span.End()
+
 	userID, err = r.userRepo.CheckSession(data)
 	if err != nil {
 		return "", err
