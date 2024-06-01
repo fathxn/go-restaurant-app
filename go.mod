@@ -32,4 +32,5 @@ require (
 	golang.org/x/time v0.5.0 // indirect
 	gorm.io/driver/postgres v1.5.7 // indirect
 	gorm.io/gorm v1.25.10 // indirect
+	gorm.io/plugin/opentelemetry v0.1.4 // indirect
 )

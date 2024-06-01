@@ -10,6 +10,7 @@ import (
 	"go-restaurant-app/internal/repository/menu"
 	"go-restaurant-app/internal/repository/order"
 	"go-restaurant-app/internal/repository/user"
+	"go-restaurant-app/internal/tracing"
 	"go-restaurant-app/internal/usecase/restaurant"
 	"time"
 )
@@ -20,6 +21,7 @@ const (
 
 func main() {
 	logger.Init()
+	tracing.Init("http://localhost:14268/api/traces")
 	e := echo.New()
 
 	db := database.GetDB(dsn)
