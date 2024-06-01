@@ -1,11 +1,13 @@
 package user
 
 import (
+	"context"
 	"crypto/rand"
 	"crypto/subtle"
 	"encoding/base64"
 	"errors"
 	"fmt"
+	"go-restaurant-app/internal/tracing"
 	"golang.org/x/crypto/argon2"
 	"strings"
 )
@@ -14,14 +16,17 @@ const (
 	cryptFormat = "$argon2id$v=%d$m=%d, t=%d, p=%d$%s$%s"
 )
 
-func (ur *userRepo) GenerateUserHash(password string) (hash string, err error) {
+func (ur *userRepo) GenerateUserHash(ctx context.Context, password string) (hash string, err error) {
+	ctx, span := tracing.CreateSpan(ctx, "GenerateUserHash")
+	defer span.End()
+
 	salt := make([]byte, 16)
 	if _, err := rand.Read(salt); err != nil {
 		return "", err
 	}
 
 	argonHash := argon2.IDKey([]byte(password), salt, ur.time, ur.memory, ur.threads, ur.keyLen)
-	b64Hash := ur.encrypt(argonHash)
+	b64Hash := ur.encrypt(ctx, argonHash)
 	b64Salt := base64.RawStdEncoding.EncodeToString(salt)
 
 	encodedHash := fmt.Sprintf(cryptFormat, argon2.Version, ur.memory, ur.time, ur.threads, b64Salt, b64Hash)
@@ -29,14 +34,20 @@ func (ur *userRepo) GenerateUserHash(password string) (hash string, err error) {
 	return encodedHash, nil
 }
 
-func (ur *userRepo) encrypt(text []byte) string {
+func (ur *userRepo) encrypt(ctx context.Context, text []byte) string {
+	_, span := tracing.CreateSpan(ctx, "encrypt")
+	defer span.End()
+
 	nonce := make([]byte, ur.gcm.NonceSize())
 	ciphertext := ur.gcm.Seal(nonce, nonce, text, nil)
 
 	return base64.StdEncoding.EncodeToString(ciphertext)
 }
 
-func (ur *userRepo) decrypt(ciphertext string) ([]byte, error) {
+func (ur *userRepo) decrypt(ctx context.Context, ciphertext string) ([]byte, error) {
+	_, span := tracing.CreateSpan(ctx, "decrypt")
+	defer span.End()
+
 	decoded, err := base64.StdEncoding.DecodeString(ciphertext)
 	if err != nil {
 		return nil, err
@@ -52,7 +63,10 @@ func (ur *userRepo) decrypt(ciphertext string) ([]byte, error) {
 	)
 }
 
-func (ur *userRepo) comparePassword(password, hash string) (bool, error) {
+func (ur *userRepo) comparePassword(ctx context.Context, password, hash string) (bool, error) {
+	ctx, span := tracing.CreateSpan(ctx, "comparePassword")
+	defer span.End()
+
 	parts := strings.Split(hash, "$")
 
 	var memory, time uint32
@@ -72,7 +86,7 @@ func (ur *userRepo) comparePassword(password, hash string) (bool, error) {
 
 		hash := parts[5]
 
-		decryptedHash, err := ur.decrypt(hash)
+		decryptedHash, err := ur.decrypt(ctx, hash)
 		if err != nil {
 			return false, err
 		}
