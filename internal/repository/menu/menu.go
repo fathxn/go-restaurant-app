@@ -20,7 +20,6 @@ func (m menuRepo) GetMenuList(ctx context.Context, menuType string) ([]model.Men
 	defer span.End()
 
 	var menuData []model.MenuItem
-	//err := m.db.Where("type = ?", menuType).Find(&menuData).Error
 	if err := m.db.WithContext(ctx).Where(model.MenuItem{Type: model.MenuType(menuType)}).Find(&menuData).Error; err != nil {
 		return nil, err
 	}
