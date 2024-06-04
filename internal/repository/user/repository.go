@@ -5,6 +5,8 @@ import (
 	"go-restaurant-app/internal/model"
 )
 
+//go:generate mockgen -package=mocks -mock_names=Repository=MockUserRepository -destination=../../mocks/user_repository_mock.go -source=repository.go
+
 type Repository interface {
 	RegisterUser(ctx context.Context, userData model.User) (model.User, error)
 	CheckRegistered(ctx context.Context, username string) (bool, error)
